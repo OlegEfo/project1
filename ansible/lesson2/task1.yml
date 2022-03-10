@@ -1,0 +1,24 @@
+#Encrypted password generation:
+#python3 -c "from passlib.hash import sha512_crypt; import getpass; 
+#print(sha512_crypt.using(rounds=5000).hash(getpass.getpass()))"
+
+---
+- hosts: all
+  become: yes
+   
+  vars:
+    users:
+      - username: Alice
+      - username: Bob
+      - username: Carol 
+
+  tasks:
+
+  - name: Create user
+    user:
+      name: "{{ item.username }}"
+      password: "$6$xx8GjSkeV827Wz6J$2S0TiSxd1hY4e6b0THEnZoW4aS41q4qDD4wtmLs733toPJ254InKSG7ht8BCnFa7K5wgfGuyaMqLWrp3SbGyQ0"
+      comment: "{{ item.username }}@example.com"
+      shell: /bin/bash
+    loop: "{{ users }}"
+
