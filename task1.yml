@@ -1,0 +1,42 @@
+---
+- name: Install Apache Web Server
+  hosts: all
+  become: yes
+
+  vars: 
+    source_file: ./index.html
+    dest_file: /var/www/html
+  
+  tasks:
+
+  - name: Install Apache
+    apt: name=apache2 state=latest
+
+  - name: Copy WEB page
+    copy: src={{ source_file }} dest={{ dest_file }}
+
+  - name: Start WebServer 
+    service: name=apache2 state=started
+    notify: Restart Apache
+
+  - name: Open HTTP  
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+    notify:  Restart Firewalld  
+
+  - name: Open HTTPS  
+    firewalld:
+      service: https
+      permanent: true
+      state: enabled
+    notify: Restart Firewalld
+
+  handlers:
+    - name: Restart Apache
+      service: name=apache2 state=restarted
+
+    - name: Restart Firewalld
+      service: name=firewalld state=restarted 
+
