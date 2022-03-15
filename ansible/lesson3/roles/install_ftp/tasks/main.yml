@@ -5,7 +5,7 @@
   - name: Install FTP
     apt: name=vsftpd state=latest
 
-  - name: Start WebServer
+  - name: Start FTP
     service: name=vsftpd state=started
 
   - name: Open FTP port
