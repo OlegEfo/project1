@@ -1,0 +1,42 @@
+---
+# tasks file for install_ftp
+
+
+  - name: Install FTP
+    apt: name=vsftpd state=latest
+
+  - name: Start WebServer
+    service: name=vsftpd state=started
+
+  - name: Open FTP port
+    firewalld:
+      service: ftp
+      permanent: true
+      state: enabled
+    notify:  Restart Firewalld
+
+  - name: Create home dir
+    file:
+      path: /var/ftp/pub
+      state: directory
+
+  - name: Create upload dir
+    file:
+      path: /var/ftp/pub/upload
+      state: directory
+      mode: 0757
+
+  - name: vsftpd setup
+    lineinfile:
+      dest: /etc/vsftpd.conf
+      backup: yes
+      backrefs: yes
+      state: present
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+    with_items:
+      - { regexp: anonymous_enable=NO, line: anonymous_enable=YES }
+      - { regexp: '^', line: anon_root=/var/ftp/pub  }
+      - { regexp: write_enable, line: write_enable=YES }
+      - { regexp: anon_upload_enable, line: anon_upload_enable=YES }
+    notify: Restart FTP
