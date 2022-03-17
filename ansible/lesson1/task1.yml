@@ -55,7 +55,7 @@
     notify: Restart Firewalld
   
   handlers:
-  - name: Restart Apache Redhat
+  - name: Restart Apache RedHat
     service: name=httpd state=restarted
     when: ansible_os_family == "RedHat"
  
