@@ -8,9 +8,16 @@
   - name: Start FTP
     service: name=vsftpd state=started
 
-  - name: Open FTP port
+  - name: Open FTP port 21
     firewalld:
       service: ftp
+      permanent: true
+      state: enabled
+    notify:  Restart Firewalld
+
+  - name: Open FTP port 20
+    firewalld:
+      port: 20/tcp
       permanent: true
       state: enabled
     notify:  Restart Firewalld

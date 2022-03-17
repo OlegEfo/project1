@@ -1,42 +1,67 @@
 ---
-- name: Install Apache Web Server
+- name: Install Apache
   hosts: all
   become: yes
-
-  vars: 
+ 
+  vars:
     source_file: ./index.html
     dest_file: /var/www/html
-  
+ 
   tasks:
+  - name: Check Linux Version
+    debug: var=ansible_os_family
 
-  - name: Install Apache
-    apt: name=apache2 state=latest
+  - block:
 
-  - name: Copy WEB page
-    copy: src={{ source_file }} dest={{ dest_file }}
+      - name: Install Apache for Debian
+        apt: name=apache2 state=present
 
-  - name: Start WebServer 
-    service: name=apache2 state=started
-    notify: Restart Apache
+      - name: Copy web page
+        copy: src={{ source_file }} dest={{ dest_file }}
+        notify: Restart Apache Debian
 
-  - name: Open HTTP  
+      - name: Start Apache
+        service: name=apache2 state=started enabled=yes
+
+    when: ansible_os_family == "Debian"
+
+ 
+  - block:
+
+       - name: Install Apache for RedHat
+         yum: name=httpd state=present
+ 
+       - name: Copy web page
+         copy: src={{ source_file }} dest={{ dest_file }} 
+         notify: Restart Apache RedHat
+ 
+       - name: Start Apache
+         service: name=httpd state=started enabled=yes
+ 
+    when: ansible_os_family == "RedHat"
+ 
+  - name: Open HTTP
     firewalld:
       service: http
       permanent: true
       state: enabled
-    notify:  Restart Firewalld  
+    notify:  Restart Firewalld
 
-  - name: Open HTTPS  
+  - name: Open HTTPS
     firewalld:
       service: https
       permanent: true
       state: enabled
     notify: Restart Firewalld
-
+  
   handlers:
-    - name: Restart Apache
-      service: name=apache2 state=restarted
-
-    - name: Restart Firewalld
-      service: name=firewalld state=restarted 
-
+  - name: Restart Apache Redhat
+    service: name=httpd state=restarted
+    when: ansible_os_family == "RedHat"
+ 
+  - name: Restart Apache Debian
+    service: name=apache2 state=restarted
+    when: ansible_os_family == "Debian"
+ 
+  - name: Restart Firewalld
+    service: name=firewalld state=restarted
