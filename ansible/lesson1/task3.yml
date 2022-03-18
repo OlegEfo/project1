@@ -1,15 +1,14 @@
 ---
-- name: Grub config
+- name: Install Apache Web Server
   hosts: all
   become: yes
 
   tasks:
-  - name: Edit grub config
+  - name: add a single line, in this case the same as the comment but uncommented
     lineinfile: dest=/etc/default/grub
                 regexp='^GRUB_CMDLINE_LINUX="'
-                insertafter='GRUB_CMDLINE_LINUX="'
-                line='GRUB_CMDLINE_LINUX="net.ifnames=0 biosdevname=0"'
+                line='GRUB_CMDLINE_LINUX="crashkernel=auto rd.lvm.lv=centos/root rd.lvm.lv=centos/swap rhgb quiet net.ifnames=0 biosdevname=0"'
                 state=present
 
   - name: Write grub configuration file
-    command: grub-mkconfig -o /boot/grub/grub.cfg
+    command: grub2-mkconfig -o /boot/grub2/grub.cfg
