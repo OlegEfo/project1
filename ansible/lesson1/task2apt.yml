@@ -6,7 +6,7 @@
   tasks:
 
   - name: Remove Apache
-    yum: name=httpd state=absent
+    apt: name=apache2 state=absent
 
   - name: Remove web page 
     file: path='/var/www/html/index.html' state=absent
