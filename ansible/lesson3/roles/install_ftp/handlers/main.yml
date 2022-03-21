@@ -1,7 +1,7 @@
 ---
 # handlers file for install_ftp
-    - name: Restart Firewalld
-      service: name=firewalld state=restarted
+- name: Restart Firewalld
+  service: name=firewalld state=restarted
 
-    - name: Start FTP service
-      service: name=vsftpd state=restarted
+- name: Restart FTP
+  service: name=vsftpd state=restarted

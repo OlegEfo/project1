@@ -2,13 +2,13 @@
 # tasks file for install_apache
 
   - name: Install Apache
-    yum: name=httpd state=latest
+    apt: name=apache2 state=latest
 
   - name: Copy WEB page
     copy: src=index.html dest={{ dest_file }}
 
   - name: Start WebServer
-    service: name=httpd state=started
+    service: name=apache2 state=started
     notify: Restart Apache
 
   - name: Open HTTP

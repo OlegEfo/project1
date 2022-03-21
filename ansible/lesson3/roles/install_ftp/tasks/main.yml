@@ -1,49 +1,48 @@
 ---
 # tasks file for install_ftp
 
+- name: Install FTP
+  yum: name=vsftpd state=latest
 
-  - name: Install FTP
-    apt: name=vsftpd state=latest
+- name: Start FTP
+  service: name=vsftpd state=started enabled=yes
 
-  - name: Start FTP
-    service: name=vsftpd state=started
+- name: Allow FTP port in Firewall
+  firewalld: port=21/tcp permanent=true state=enabled
+  notify: Restart Firewalld
 
-  - name: Open FTP port 21
-    firewalld:
-      service: ftp
-      permanent: true
-      state: enabled
-    notify:  Restart Firewalld
+- name: Allow FTP service in Firewall
+  firewalld: service=ftp permanent=true state=enabled
+  notify: Restart Firewalld
+  
+- name: Create home dir
+  file:
+    path: /var/ftp/pub
+    state: directory
+    mode: 0755
 
-  - name: Open FTP port 20
-    firewalld:
-      port: 20/tcp
-      permanent: true
-      state: enabled
-    notify:  Restart Firewalld
+- name: Create upload dir
+  file:
+    path: /var/ftp/pub/upload
+    state: directory
+    mode: 0757
 
-  - name: Create home dir
-    file:
-      path: /var/ftp/pub
-      state: directory
+- name: Modify FTP configuation
+  lineinfile:
+    dest: /etc/vsftpd/vsftpd.conf
+    backup: yes
+    backrefs: yes
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: anonymous_enable=NO, line: anonymous_enable=YES }
+    - { regexp: anon_upload_enable, line: anon_upload_enable=YES }
+    - { regexp: anon_mkdir_write_enable, line: anon_mkdir_write_enable=YES }
+  notify: Restart FTP
 
-  - name: Create upload dir
-    file:
-      path: /var/ftp/pub/upload
-      state: directory
-      mode: 0757
+- name: Modify SElinux
+  shell: setsebool -P allow_ftpd_anon_write on
 
-  - name: vsftpd setup
-    lineinfile:
-      dest: /etc/vsftpd.conf
-      backup: yes
-      backrefs: yes
-      state: present
-      regexp: "{{ item.regexp }}"
-      line: "{{ item.line }}"
-    with_items:
-      - { regexp: anonymous_enable=NO, line: anonymous_enable=YES }
-      - { regexp: '^', line: anon_root=/var/ftp/pub  }
-      - { regexp: write_enable, line: write_enable=YES }
-      - { regexp: anon_upload_enable, line: anon_upload_enable=YES }
-    notify: Restart FTP
+- name: Modify SElinux
+  shell: chcon -t public_content_rw_t /var/ftp/pub/upload/
